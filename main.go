@@ -11,6 +11,9 @@ func main() {
 		panic(err)
 	}
 
-	c8.LoadROM("assets/1-chip8-logo.ch8")
+	err = c8.LoadROM("assets/1-chip8-logo.ch8")
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println(c8.Memory)
 }
