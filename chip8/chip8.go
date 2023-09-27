@@ -43,8 +43,8 @@ func InitChip8() (*Chip8, error) {
 	c8.Instructions[0xB000] = c8.IBNNN
 	c8.Instructions[0xC000] = c8.ICXNN
 	c8.Instructions[0xD000] = c8.IDXYN
-	c8.Instructions[0xE00E] = c8.IEX9E
-	c8.Instructions[0xE001] = c8.IEXA1
+	c8.Instructions[0xE09E] = c8.IEX9E
+	c8.Instructions[0xE0A1] = c8.IEXA1
 	c8.Instructions[0xF007] = c8.IFX07
 	c8.Instructions[0xF00A] = c8.IFX0A
 	c8.Instructions[0xF015] = c8.IFX15
@@ -55,9 +55,6 @@ func InitChip8() (*Chip8, error) {
 	c8.Instructions[0xF055] = c8.IFX55
 	c8.Instructions[0xF065] = c8.IFX65
 
-	// ...
-
-	// Iterate through map
 	/*for key := range c8.Instructions {
 	    fmt.Printf("Key: %d\n", key)
 	}*/
