@@ -5,8 +5,9 @@ import (
 	"os"
 )
 
+// 
 func (c8 *Chip8) LoadROM(filename string) error {
-	return c8.loadFile(filename, MemoryForROM, PCStartAddress, &c8.Memory)
+	return c8.loadFile(filename, MaxMemoryForROM, PCStartAddress, &c8.Memory)
 }
 
 func (c8 *Chip8) loadFile(filename string, maxCapacity int, startAddress int, destination *[TotalMemory]byte) error {

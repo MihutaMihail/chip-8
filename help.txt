@@ -1,0 +1,38 @@
+/// Extract nibble \\\
+//
+// To decode CHIP-8 opcodes, we'll need to isolate the highets 4 bits (nibble) which represents the instruction part
+//
+// Here's the code :
+// *** (uint16(oc) & uint16(0xF000)) >> 12 ***
+//
+//  --- Bitwise AND operation with 0xF000
+// We use the hexadecimal value 0xF000 as a bitmask (1111000000000000)
+// This will effectively set all bits to 0 except the highest 4 bits of the opcode
+// This only works because it is an AND operation. The 0 would just nullify you could say all the these bites while the 1
+// will make sure that the correct value is being represented by the bites
+//
+// --- Right Shift by 12 bits
+// After the operation, our opcode will still be a 16-bit value but this time we isolated the only part that we need.
+// What we need to do is shift the nibble all the way down (to the right) to isolate them (least significant bits)
+
+
+/// Extract parameters \\\
+//
+// Extracting the parameters 0x1NNN (the NNN) is pretty much the same thing as the nibble. 
+// We'll need to use a different bitmask to set the nibble to 0. No shift needed
+// Here's the code : 
+// *** uint16(oc) & uint16(0x0FFF) ***
+
+
+/// Bitmask \\\
+// From what I can see 0x000F sets the 12 most important bits to 0 (because of the 000) while 
+// retaining the least important bits (because of the F)
+// So to get the X parameters use the bitmask 0x0F00
+// And for Y parameters use the bitmask 0x00F0
+// This is because X is the second value in the opcode while Y is the third
+
+/// GetOpcodeID() \\\
+// Among all the opcodes, only 4 of them have multiple opcodes that starts with the same nibble (hence the 4 cases (excluding default))
+// These are : 0, 8, E and F. Any opcode that doesn't fall in any of these 4 cases are opcodes 
+// with an unique nibble hence we can just return its nibble directly ---> uint16(oc) & uint16(0xF000). 
+// (The nibble (first 4 bits) are being returned thanks to F (which is 1111 in hexadecimal))

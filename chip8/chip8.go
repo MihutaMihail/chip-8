@@ -11,6 +11,7 @@ type Chip8 struct {
 	Instructions map[uint16]func()
 }
 
+// Initializing Chip-8
 func InitChip8() (*Chip8, error) {
 	c8 := &Chip8{
 		Memory:       [TotalMemory]byte{},
