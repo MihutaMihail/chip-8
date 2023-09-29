@@ -2,11 +2,10 @@ package chip8
 
 type opcode uint16
 
-// Get opcode ID (nibble)
-func (oc opcode) GetOpcodeID() uint16 {
-	first4Bits := (uint16(oc) & uint16(0xF000)) >> 12
+// Get opcode instruction
+func (oc opcode) GetOpcodeInstruction() uint16 {
+	switch (uint16(oc) & uint16(0xF000)) >> 12 {
 
-	switch first4Bits {
 	case uint16(0x0):
 		return uint16(oc)
 
@@ -38,9 +37,9 @@ func (c8 *Chip8) fetchOpcode() {
 
 // Get current opcode and execute its instruction
 func (c8 *Chip8) executeOpcode() {
-	id := c8.COpcode.GetOpcodeID()
-	if instruction, ok := c8.Instructions[id]; ok {
-		instruction()
+	keyInst := c8.COpcode.GetOpcodeInstruction()
+	if inst, found := c8.Instructions[keyInst]; found {
+		inst()
 	}
 }
 
