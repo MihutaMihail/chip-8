@@ -2,19 +2,21 @@ package chip8
 
 import "fmt"
 
-// Clear Screen
+// Clears window
 func (c8 *Chip8) I00E0() {
-	fmt.Println("I00E0")
+	c8.FrameBuffer = [64 * 32]byte{}
+	c8.MustDraw = true
 }
 
-// Return from subroutine
+// Return from a subroutine
 func (c8 *Chip8) I00EE() {
 	fmt.Println("I00EE")
 }
 
 // Jumps to address NNN
 func (c8 *Chip8) I1NNN() {
-	fmt.Println("I1NNN")
+	addr := c8.COpcode.NNN()
+	c8.Pc = addr
 }
 
 // Calls subroutine at NNN
@@ -37,9 +39,10 @@ func (c8 *Chip8) I5XY0() {
 	fmt.Println("I5XY0")
 }
 
-// Sets VX to NN
+// Sets VX = NN
 func (c8 *Chip8) I6XNN() {
-	fmt.Println("I6XNN")
+	_byte := c8.COpcode.NN()
+	c8.Registers[c8.COpcode.X()] = _byte
 }
 
 // Adds NN to VX
@@ -97,9 +100,9 @@ func (c8 *Chip8) I9XY0() {
 	fmt.Println("I9XY0")
 }
 
-// Sets I to address NNNN
+// Sets I to address NNN
 func (c8 *Chip8) IANNN() {
-	fmt.Println("IANNN")
+	c8.I = c8.COpcode.NNN()
 }
 
 // Jumps to address NNN plus V0
@@ -114,7 +117,49 @@ func (c_ *Chip8) ICXNN() {
 
 // Draws sprite at coordinate (VX, VY) width 8 pixels and height N pixels
 func (c8 *Chip8) IDXYN() {
-	fmt.Println("IDXYN")
+
+	// Get X and Y registers from the opcode
+	vx := c8.Registers[c8.COpcode.X()]
+	vy := c8.Registers[c8.COpcode.Y()]
+
+	// Calculate the starting coordinates (x0, y0) of the sprite
+	x0 := int(vx % WidthScreen)
+	y0 := int(vy % HeightScreen)
+
+	// Height of a sprite (N pixels)
+	hSprite := int(c8.COpcode.N())
+
+	// Get the memory index (I) where the sprite data is located
+	i := int(c8.I)
+
+	// Initialize variables to handle sprite data
+	var _byte byte
+	var bit byte
+
+	// Initialize the collision flag (VF) to 0 (no collision).
+	c8.Registers[0xF] = 0
+
+	for y := 0; y < hSprite; y++ {
+		for x := 0; x < 8; x++ {
+			// Get byte of sprite data and the bit (pixel) from the current byte
+			_byte = c8.Memory[i+y]
+			bit = _byte & (0x80 >> x)
+
+			if bit != 0 {
+				cellFrameBuffer := c8.FrameBuffer.Get(x0+x, y0+y)
+
+				// If the pixel in the FrameBuffer is already ON, set the collision flag (VF) to 1.
+				if *cellFrameBuffer == 1 {
+					c8.Registers[0xF] = 1
+				}
+
+				// Use a XOR operation to toggle the pixel in the FrameBuffer.
+				*cellFrameBuffer ^= 1
+			}
+		}
+	}
+
+	c8.MustDraw = true
 }
 
 // Skips next instruction if key stored in VX is pressed

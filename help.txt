@@ -125,11 +125,10 @@
 // function / instruction
 ---------------------------------------------------------------------------------------------------------------------------
 /// Loading ROM \\\
-// There's actually two functions to load a ROM but in reality there's only one. The function LoadROM() calls the function
-// loadFile() which will actually load the ch8 file into the memory. The problem is that to load the ROM we'll need some
-// values like the max capacity that a ROM can have and where it will be stocked (start address). These values are declared
-// in the package 'chip8' meaning that these const are exclusive to the particular package. To avoid importing these values
-// everywhere we need to, we are just going to call the function LoadROM() with the file that we want to load and that's it.
+// The reason that there's to function to load the ROM is because of 2 things :
+// 1 - Besides the filename, we'll need other values that are specified in /chip8. Meaning that if you want to call this
+// function in /app, you can't because those const don't exist there and extra steps are needed
+// 2 - It enables to load other things like fonts without making a seperate function since the steps are the same
 // 
 // Here's the code :
 //
@@ -161,8 +160,11 @@
 // in the 'file' variable.
 ---------------------------------------------------------------------------------------------------------------------------
 
+REDO EVERYTHING THIS WAY
 
-
-
-
-commit -m "Updated help.txt + renamed / cleaned up a few things" 
+/// ToDraw(buffer FrameBuffer) \\\
+//
+// Location : 
+//
+// *** (line / block of code in question) ***
+// explanation

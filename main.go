@@ -1,23 +1,19 @@
 package main
 
 import (
-	"chip-8/chip8"
+	"chip-8/game"
+
+	"github.com/faiface/pixel/pixelgl"
 )
 
 func main() {
-	c8, err := chip8.InitChip8()
+	pixelgl.Run(run)
+}
+
+func run() {
+	myGame, err := game.NewGame()
 	if err != nil {
 		panic(err)
 	}
-
-	err = c8.LoadROM("assets/1-chip8-logo.ch8")
-	//err = c8.LoadROM("assets/2-ibm-logo.ch8")
-	if err != nil {
-		panic(err)
-	}
-
-	// Test if instructions are being executed
-	for i := 0; i < 100; i++ {
-		c8.Cycle()
-	}
+	myGame.RunGame()
 }

@@ -1,5 +1,7 @@
 package chip8
 
+import "chip-8/window"
+
 type Chip8 struct {
 	Memory       [TotalMemory]byte
 	Registers    [NumberOfRegisters]byte
@@ -8,7 +10,10 @@ type Chip8 struct {
 	Stack        [StackLevels]uint16
 	Sp           byte
 	COpcode      opcode
+	FrameBuffer  window.FrameBuffer
 	Instructions map[uint16]func()
+	MustDraw     bool
+	Quit         bool
 }
 
 // Initializing Chip-8
@@ -18,6 +23,7 @@ func InitChip8() (*Chip8, error) {
 		Registers:    [NumberOfRegisters]byte{},
 		Pc:           PCStartAddress,
 		Stack:        [StackLevels]uint16{},
+		FrameBuffer:  window.FrameBuffer{},
 		Instructions: map[uint16]func(){},
 	}
 
@@ -56,9 +62,13 @@ func InitChip8() (*Chip8, error) {
 	c8.Instructions[0xF055] = c8.IFX55
 	c8.Instructions[0xF065] = c8.IFX65
 
-	/*for key := range c8.Instructions {
-	    fmt.Printf("Key: %d\n", key)
-	}*/
-
 	return c8, nil
+}
+
+func (c8 *Chip8) GetFrameBuffer() window.FrameBuffer {
+	return c8.FrameBuffer
+}
+
+func (c8 *Chip8) IsClosed() bool {
+	return c8.Quit
 }

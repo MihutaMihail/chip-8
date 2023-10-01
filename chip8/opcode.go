@@ -24,7 +24,7 @@ func (oc opcode) GetOpcodeInstruction() uint16 {
 }
 
 // Executes all steps necessary in a row
-func (c8 *Chip8) Cycle() {
+func (c8 *Chip8) CycleEmulator() {
 	c8.fetchOpcode()
 	c8.executeOpcode()
 }
