@@ -47,7 +47,8 @@ func (c8 *Chip8) I6XNN() {
 
 // Adds NN to VX
 func (c8 *Chip8) I7XNN() {
-	fmt.Println("I7XNN")
+	_byte := c8.COpcode.NN()
+	c8.Registers[c8.COpcode.X()] += _byte
 }
 
 // Sets VX to the value of VY
