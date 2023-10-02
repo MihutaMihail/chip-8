@@ -1,11 +1,10 @@
 package window
 
 import (
-	"image/color"
-
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"golang.org/x/image/colornames"
 )
 
 const (
@@ -18,16 +17,21 @@ type FrameBuffer [64 * 32]byte
 
 // Renders the content of the FrameBuffer onto the window
 func ToDraw(buffer FrameBuffer, w *pixelgl.Window) {
-	w.Clear(color.RGBA{R: 153, G: 102, B: 1, A: 255})
+	w.Clear(colornames.Black)
 	imd := imdraw.New(nil)
-	imd.Color = pixel.RGB(255, 1, 0)
+	imd.Color = pixel.RGB(1, 1, 1)
 
 	for y := 0; y < 32; y++ {
 		for x := 0; x < 64; x++ {
 
 			if *buffer.Get(x, 31-y) != 0 {
-				imd.Push(pixel.V(SizePixel*float64(x), SizePixel*float64(y)))
-				imd.Push(pixel.V(SizePixel*float64(x)+SizePixel, SizePixel*float64(y)+SizePixel))
+				upperLeftX := SizePixel * float64(x)
+				upperLeftY := SizePixel * float64(y)
+				bottomRightX := upperLeftX + SizePixel
+				bottomRightY := upperLeftY + SizePixel
+
+				imd.Push(pixel.V(upperLeftX, upperLeftY))
+				imd.Push(pixel.V(bottomRightX, bottomRightY))
 				imd.Rectangle(0)
 			}
 		}

@@ -4,7 +4,9 @@ type opcode uint16
 
 // Get opcode instruction
 func (oc opcode) GetOpcodeInstruction() uint16 {
-	switch (uint16(oc) & uint16(0xF000)) >> 12 {
+	nibble := (uint16(oc) & uint16(0xF000)) >> 12
+
+	switch nibble {
 
 	case uint16(0x0):
 		return uint16(oc)
@@ -23,7 +25,7 @@ func (oc opcode) GetOpcodeInstruction() uint16 {
 	}
 }
 
-// Executes all steps necessary in a row
+// Starts Chip-8 Emulator cycle
 func (c8 *Chip8) CycleEmulator() {
 	c8.fetchOpcode()
 	c8.executeOpcode()
@@ -35,10 +37,10 @@ func (c8 *Chip8) fetchOpcode() {
 	c8.Pc += 2
 }
 
-// Get current opcode and execute its instruction
+// Get current opcode and execute respective instruction
 func (c8 *Chip8) executeOpcode() {
-	keyInst := c8.COpcode.GetOpcodeInstruction()
-	if inst, found := c8.Instructions[keyInst]; found {
+	instKey := c8.COpcode.GetOpcodeInstruction()
+	if inst, found := c8.Instructions[instKey]; found {
 		inst()
 	}
 }

@@ -2,7 +2,7 @@ package chip8
 
 import "fmt"
 
-// Clears window
+// Clears the window
 func (c8 *Chip8) I00E0() {
 	c8.FrameBuffer = [64 * 32]byte{}
 	c8.MustDraw = true
@@ -115,50 +115,43 @@ func (c_ *Chip8) ICXNN() {
 	fmt.Println("ICXNN")
 }
 
-// Draws sprite at coordinate (VX, VY) width 8 pixels and height N pixels
+// Draws Sprite (VX, VY), Width  = 8 px / Height = N px
 func (c8 *Chip8) IDXYN() {
-
-	// Get X and Y registers from the opcode
-	vx := c8.Registers[c8.COpcode.X()]
-	vy := c8.Registers[c8.COpcode.Y()]
-
-	// Calculate the starting coordinates (x0, y0) of the sprite
-	x0 := int(vx % WidthScreen)
-	y0 := int(vy % HeightScreen)
-
-	// Height of a sprite (N pixels)
+	VX := c8.Registers[c8.COpcode.X()]
+	VY := c8.Registers[c8.COpcode.Y()]
 	hSprite := int(c8.COpcode.N())
 
-	// Get the memory index (I) where the sprite data is located
+	// Memory index (I) = Sprite data location
 	i := int(c8.I)
 
-	// Initialize variables to handle sprite data
-	var _byte byte
-	var bit byte
-
-	// Initialize the collision flag (VF) to 0 (no collision).
+	// Collision flag (VF) = 0 (no collision).
 	c8.Registers[0xF] = 0
 
 	for y := 0; y < hSprite; y++ {
 		for x := 0; x < 8; x++ {
-			// Get byte of sprite data and the bit (pixel) from the current byte
-			_byte = c8.Memory[i+y]
-			bit = _byte & (0x80 >> x)
 
-			if bit != 0 {
-				cellFrameBuffer := c8.FrameBuffer.Get(x0+x, y0+y)
+			_byte := c8.Memory[i+y]
+			spritePx := _byte & (0x80 >> x)
 
-				// If the pixel in the FrameBuffer is already ON, set the collision flag (VF) to 1.
+			// Check Sprite px = 1 (ON)
+			if spritePx != 0 {
+				screenX := int(VX) + x
+				screenY := int(VY) + y
+
+				cellFrameBuffer := c8.FrameBuffer.Get(screenX, screenY)
+
+				// If pixel(frameBuffer) = ON, collision flag (VF) = 1
 				if *cellFrameBuffer == 1 {
 					c8.Registers[0xF] = 1
 				}
 
-				// Use a XOR operation to toggle the pixel in the FrameBuffer.
+				// Use a XOR operation to toggle the pixel in the FrameBuffer
 				*cellFrameBuffer ^= 1
 			}
 		}
 	}
 
+	// Tell Chip-8 to draw
 	c8.MustDraw = true
 }
 

@@ -14,21 +14,24 @@ type Game struct {
 	window *pixelgl.Window
 }
 
-// Initializes a new Chip-8 game instance and sets up the window
+// Initializes a new Chip-8 game instance
 func NewGame() (*Game, error) {
 	myGame := new(Game)
 	var err error
 
+	// Init Chip-8
 	myGame.c8, err = chip8.InitChip8()
 	if err != nil {
 		return nil, err
 	}
 
+	// Cfg file
 	cfgPixel := pixelgl.WindowConfig{
 		Title:  "Chip-8 Emulator",
 		Bounds: pixel.R(0, 0, window.ScreenWidth, window.ScreenHeight),
 	}
 
+	// Pixel Window
 	myGame.window, err = pixelgl.NewWindow(cfgPixel)
 	if err != nil {
 		return nil, err
@@ -37,7 +40,7 @@ func NewGame() (*Game, error) {
 	return myGame, nil
 }
 
-// Loads the ROM and runs the Chip-8 game loop
+// Loads the ROM and runs game loop
 func (myGame *Game) RunGame() {
 	if err := myGame.c8.LoadROM("assets/1-chip8-logo.ch8"); err != nil {
 		panic(err)

@@ -8,7 +8,7 @@ const (
 	NumberOfRegisters = 16
 	PCStartAddress    = 0x200
 	StackLevels       = 16
-	Frequency         = time.Second / time.Duration(60)
+	Frequency         = time.Second / time.Duration(60) // 60Hz (1/60)
 	WidthScreen       = 64
 	HeightScreen      = 32
 )

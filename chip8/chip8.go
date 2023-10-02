@@ -12,8 +12,9 @@ type Chip8 struct {
 	COpcode      opcode
 	FrameBuffer  window.FrameBuffer
 	Instructions map[uint16]func()
-	MustDraw     bool
-	Quit         bool
+
+	MustDraw bool
+	Quit     bool
 }
 
 // Initializing Chip-8
@@ -65,10 +66,12 @@ func InitChip8() (*Chip8, error) {
 	return c8, nil
 }
 
+// Get Chip-8 FrameBuffer
 func (c8 *Chip8) GetFrameBuffer() window.FrameBuffer {
 	return c8.FrameBuffer
 }
 
+// Check if Chip-8 is closed
 func (c8 *Chip8) IsClosed() bool {
 	return c8.Quit
 }

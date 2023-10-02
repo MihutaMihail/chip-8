@@ -25,146 +25,350 @@
 // Represents the current opcode. The opcode is needed to execute the correct instruction.
 // Once the current opcode instruction is executed, the next opcode is loaded
 // 
+// --- FrameBuffer window.FrameBuffer
+// This is the screen where all content will be displayed hence it's coming
+// from the package 'window'. It is 64x32 bytes
+//
 // --- Instructions map[uint16]func(){}
 // Key : opcode
 // Value : function containing the code needed to execute the respective instruction
 ---------------------------------------------------------------------------------------------------------------------------
-/// Extract nibble \\\
-//
-// To decode CHIP-8 opcodes, we'll need to isolate the nibble (the 4 most important bits) which represents the instruction part
-//
-// Here's the code :
-//
-//\\    (uint16(oc) & uint16(0xF000)) >> 12 
-//
-// We use the hexadecimal value 0xF000 as a bitmask (1111000000000000)
-// This will effectively set all bits to 0 except the highest 4 bits of the opcode
-// This only works because it is an AND operation. The 0 would just nullify you could say all the these bites while the 1
-// will make sure that the correct value is being represented by the bites
-// After the operation, our opcode will still be a 16-bit value but this time we isolated the only part that we need.
-// What we need to do is shift the nibble all the way down (to the right) to isolate them (least significant bits)
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ---------------------------------------------------------------------------------------------------------------------------
-/// Extract parameters \\\
-//
-// Extracting the parameters 0x1NNN (the NNN) is pretty much the same thing as the nibble. 
-// We'll need to use a different bitmask to set the nibble to 0. No shift needed
-// Here's the code : 
-//
-//\\    uint16(oc) & uint16(0x0FFF) 
----------------------------------------------------------------------------------------------------------------------------
-/// Bitmask \\\
+// func (oc opcode) GetOpcodeInstruction() uint16 {} \\
 // 
-// From what I can see 0x000F sets the 12 most important bits to 0 (because of the 000) while 
-// retaining the least important bits (because of the F)
-// So to get the X parameters use the bitmask 0x0F00
-// And for Y parameters use the bitmask 0x00F0
-// This is because X is the second value in the opcode while Y is the third so the F is on
-// the second / third value respectivelyd
----------------------------------------------------------------------------------------------------------------------------
-/// GetOpcodeInstruction() \\\
+// Location : chip8/opcode.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** nibble := (uint16(oc) & uint16(0xF000)) >> 12  ***
 //
-// Here's the code :
+// DESCRIPTION :
+//  This line of code is used to get then nibble (highest / most important 4 bits) of the opcode (16-bit)
+//  The nibble indicates the instruction while the 12 other bits are the parameters that come along with the instruction
+//  For example, one of the opcode is 1NNN which is a jump. The jump is indicated by the 1 (4-bits / nibble) but the address 
+//  of where the jump will end is located in the NNN (12-bits)
 //
-//\\ func (oc opcode) GetOpcodeInstruction() uint16 {
-//\\	switch (uint16(oc) & uint16(0xF000)) >> 12 {
-//\\
-//\\	case uint16(0x0):
-//\\		return uint16(oc)
-//\\
-//\\	case uint16(0x8):
-//\\		return uint16(oc) & uint16(0xF00F)
-//\\
-//\\	case uint16(0xE):
-//\\		return uint16(oc) & uint16(0xF0FF)
-//\\
-//\\	case uint16(0xF):
-//\\		return uint16(oc) & uint16(0xF0FF)
-//\\
-//\\	default:
-//\\		return uint16(oc) & uint16(0xF000)
-//\\	}
-//\\ }
+// CODE : 
+//  --- uint16(oc) 
+//   Converts the opcode to a unsigned 16-bit to ensure that the opcode will be treated as a 16-bit value
 //
-// Among all the opcodes, only 4 of them have multiple opcodes that starts with the same nibble (hence the 4 cases (excluding default))
-// These are : 0, 8, E and F. Any opcode that doesn't fall in any of these 4 cases are opcodes with an unique nibble 
-// hence we can just return the nibble directly ---> uint16(oc) & uint16(0xF000). 
-// (The nibble (highest 4 bits) are being returned thanks to F (which is 1111 in hexadecimal))
----------------------------------------------------------------------------------------------------------------------------
-/// Fetch opcode \\\
+//  --- uint16(0xF000)
+//   This is the equivalent of 1111 0000 0000 0000 in binary. It's used as a bitmask
 //
-// Here's the code :
+//  --- &
+//   The '&' operator performs a bitwise AND operation between uint16(oc) and uint16(0xF000). This operation retains only 
+//   the bits that are set to 1 in 'oc' AND '0xF000'. Effectively, this extracts the nibble.
+//   'oc'     ---> 0110 1010 0110 1110
+//   '0xF000' ---> 1111 0000 0000 0000
+//   'result' ---> 0110 0000 0000 0000
 //
-//\\ func (c8 *Chip8) fetchOpcode() {
-//\\	c8.COpcode = opcode(uint16(c8.Memory[c8.Pc])<<8 | uint16(c8.Memory[c8.Pc+1]))
-//\\	c8.Pc += 2
-//\\ }
+//  --- >> 12
+//   The '>>' operation will perform a bitwise right shift to shift the nibble by 12 positions. This means that the 
+//   corresponding bits that were extracted will shift to the least important 4-bit. Effectively. This isolates the nibble.
+-------------------------------------------------------------------------------------------------------------------------
+// *** case uint16(0x0) / uint16(0x8) / uint16(0xE) / uint16(0xF) ||| default***
 // 
-// Fetching an opcode require to go into the memory and using the program counter to indicate the location of the opcode
-// The program counter will start at 0x200 or 512. An opcode is 16 bits long meaning that once we get the first 8 bits,
-// we'll shift them to the left (we can since it's a uint16) and get the next 8 bits making it 16 bit long.
-// Furthermore, this 16 bit opcode will be converted into the 'opcode' type (made by me) to set the value of
-// the current opcode for our chip 8 structure. To finish, we'll increase the program counter by 2 so that the next time
-// we fetch, it will get the next opcode and not the same one.
+// DESCRIPTION : 
+//  These cases are part of a switch based on the extracted nibble. The reason for 4 cases is because in the opcode table
+//  there's only 4 opcodes with have multiple variations that have the same nibble (0, 8, E, F). The opcodes that 
+//  have an unique nibble, are being handled by the default case.
+//
+// CODE :
+//  --- case uint16(0x8):
+//  --- return uint16(oc) & uint16(0xF00F)
+//   The opcodes that have the same nibble have only one thing that differentiates them, the lowest 4-bits.
+//   Meaning, if you want to return the proper instruction, you will need to return the nibble (0xF000) and the 
+//   lowest 4-bits (0x000F). Returning both will result in (0xF00F)
+//
+//  --- case uint16(0xE):
+//  --- return uint16(oc) & uint16(0xF0FF)
+//   The same concept applies to the opcodes with E as their nibble. The difference here is actually the lowest byte (8-bits)
+//   So if you want to return the opcode you will need to return the nibble (0xF000) and the lowest 8-bits (0x00FF)
+//
+// --- default:
+// --- return uint16(oc) & uint16(0xF000)
+//  Since the other opcodes have no other variations we'll just return the instruction part of the opcode since the 
+//  other bits are used as parameters that will be used in the function handling its respective instruction.
 ---------------------------------------------------------------------------------------------------------------------------
-/// Executing an opcode instruction \\\
-//
-// Here's the code :
-//
-//\\ func (c8 *Chip8) executeOpcode() {
-//\\	keyInst := c8.COpcode.GetOpcodeInstruction()
-//\\	if inst, found := c8.Instructions[keyInst]; found {
-//\\		inst()
-//\\	}
-//\\ }
-//
-// Firstly, we get the instruction taken from the opcode which we'll use as a key for our Instruction map later.
-// Next, we need to check which instruction our variable 'keyInst' currently holds. To find this, we'll need to look
-// into the map that we made when initializing the chip8. If the instruction is found, the 'inst' variable will 
-// now hold the instruction found and 'found' will be set to true because the instruction has been found. Our if condition
-// is checking if found == true (not needed to add the '== true'). If it's true, then we execute the corresponding
-// function / instruction
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ---------------------------------------------------------------------------------------------------------------------------
-/// Loading ROM \\\
-// The reason that there's to function to load the ROM is because of 2 things :
-// 1 - Besides the filename, we'll need other values that are specified in /chip8. Meaning that if you want to call this
-// function in /app, you can't because those const don't exist there and extra steps are needed
-// 2 - It enables to load other things like fonts without making a seperate function since the steps are the same
+/// func (c8 *Chip8) fetchOpcode() {} \\\
+//
+// Location : chip8/opcode.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** opcode(uint16(c8.Memory[c8.Pc])<<8 | uint16(c8.Memory[c8.Pc+1])) ***
+//
+// DESCRIPTION :
+//  Fetching an opcode requires to go into the memory and use the program counter to indicate the location of the opcode.
+//  The program counter will start at 0x200 or 512. The memory is made out of bytes, this means that to get an opcode, which is
+//  2 bytes long, we'll need to read two bytes consecutively to then assemble them into a 16-bit opcode.
+//
+// CODE :
+//  --- c8.Memory[c8.Pc] / c8.Memory[c8.Pc+1]
+//   These retrieve the first byte and the next byte respectively. The program counter is used to keep track of where the 
+//   in the memory we are. This program counter will be increased by 2 since we're currently reading the next 2 bytes which
+//   we no longer need
+//
+// --- <<8
+//  Getting an opcode consists in reading the next 2 bytes. However if we actually want to store them both, we'll need to 
+//  shift the first byte to the left by 8 positions because when fetching a byte, it will automatically be stored in the
+//  lowest byte. With this, it gets moved to the highest byte so that the next byte goes to the lowest byte.
+//
+// --- |
+//  The '|' operator will perform a bitwise OR operation on the two bytes. This will merge the bits from the first 
+//  byte (in the higher 8 bits) and the bits from the second byte (in the lower 8 bits) into a single 16-bit integer.
+//  'firstByte'  ---> 1011 0010 0000 0000
+//  'secondByte' ---> 0000 0000 1001 1110
+//  'result'     ---> 1011 0010 1001 1110
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+/// func (c8 *Chip8) loadFile(filename string, maxCapacity int, startAddress int, memory *[TotalMemory]byte) error {} \\\
+//
+// Location : chip8/rom.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** copy(memory[startAddress:], file[:]) ***
+//
+// DESCRIPTION :
+//  This is the code that will copy the contents of the file into our memory at a specific part.
+//
+// CODE :
+//  --- memory[startAddress:]
+//   Here we're using the startAddress (which references the const in chip8/specs.go - PCStartAddress). This is equivalent
+//   to 0x200 or 512. It is stated that the ROM should be loaded at this value. The ':' is used to indicate that the copy
+//   will happen AFTER the startAddress
+//
+// --- file[:]
+//  This just indicates that the whole content of the 'file' will be used (copied in this case)
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+/// func ToDraw(buffer FrameBuffer, w *pixelgl.Window) {} \\\
+//
+// Location : window/window.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** w.Clear(colornames.Black) ***
+// *** imd := imdraw.New(nil) *** 
+// *** imd.Color = pixel.RGB(1, 1, 1) *** 
+//
+// DESCRIPTION :
+//  This block of code is used to prepare the environnement to draw the pixels
+//
+// CODE : 
+// --- w.Clear(colornames.Black) 
+//  Using the window 'w' we can clear the screen a color (black).
+//
+// --- imd := imdraw.New(nil)
+//  Creating a new nil imdraw object for further use
+//
+// --- imd.Color = pixel.RGB(1, 1, 1)
+//  Here we set the color that will be used to draw the pixels with (white).
+//-------------------------------------------------------------------------------------------------------------------------
+// *** for y := 0; y < 32; y++ ***
+// *** for x := 0; x < 64; x++ ***
+//
+// DESCRIPTION :
+//  This block of code is a pair of nested loops over a 2D grid with the dimensions 64x32. 64 indicates the width and 32
+//  indcate the height. The reason we do this is to go through every single value in the FrameBuffer.
+//-------------------------------------------------------------------------------------------------------------------------
+// *** if *buffer.Get(x, 31-y) != 0 ***
+//
+// DESCRIPTION :
+//  Here we check if the value from the function Get() with the coordinates (x, 31-y) is not 0. If it's 1, there's no need
+//  draw that pixel on the screen. The reason why we do 31-y is because the (0,0) coordinates for the pixelgl window are 
+//  actually in the lower left corner of the screen and not the upper left corner like the Chip-8 emulator, so we need
+//  to go in reverse.
 // 
-// Here's the code :
+// CODE :
+// --- *buffer.Get(x, 31-y) 
+//  The function Get() returns the memory address of the value with the coordinates (x, y). We cannot compare this value to
+//  an int like 0 so we need to use the * to get the value that the memory address points to.
+//-------------------------------------------------------------------------------------------------------------------------
+// *** upperLeftX := SizePixel * float64(x) ***
+// *** upperLeftY := SizePixel * float64(y) *** 
+// *** bottomRightX := upperLeftX + SizePixel *** 
+// *** bottomRightY := upperLeftY + SizePixel *** 
 //
-//\\ func (c8 *Chip8) LoadROM(filename string) error {
-//\\	return c8.loadFile(filename, MaxCapacityForROM, PCStartAddress, &c8.Memory)
-//\\ }
+// DESCRIPTION :
+//  To be able to draw the pixels inside the window, we first need to specify the upper left coordinates (x, y) and the bottom
+//  right coordinates (x, y). What we do is just multiply the X / Y value by the size of the pixel that we specified to get
+//  the coordinates X and Y for that specific pixel
+//-------------------------------------------------------------------------------------------------------------------------
+// *** imd.Push(pixel.V(upperLeftX, upperLeftY)) ***
+// *** imd.Push(pixel.V(bottomRightX, bottomRightY)) *** 
+// *** imd.Rectangle(0) *** 
+// *** imd.Draw(w) ***
 //
-//\\ func (c8 *Chip8) loadFile(filename string, maxCapacity int, startAddress int, memory *[TotalMemory]byte) error {
-//\\	file, err := os.ReadFile(filename)
-//\\	if err != nil {
-//\\		return err
-//\\	}
-//\\
-//\\	if len(file) > maxCapacity {
-//\\		errSize := "ROM : '" + filename + "' has exceeded the size limitations"
-//\\		return errors.New(errSize)
-//\\	}
-//\\
-//\\	copy(memory[startAddress:], file[:])
-//\\
-//\\	return nil
-//\\ }
+// DESCRIPTION :
+//  Know that we have specified the upper left and bottom right coordinates we can use those values to create the vectors
+//  neeeded for the imdraw object to draw the rectangle.
 //
-// To load a ROM we first need to read the respective file to get its contents. Once we got what we need we'll 
-// verify if the ROM has not exceeding the file size limit. If yes, it will return a new error indicating the error
-// To finish, we actually need to load the file contents into the memory by using the copy() function.
-// We need to indicate two things, the destination of the copy and the content that we want to copy. The destination
-// will be the variable 'memory' which is the chip 8 memory. The content that we want to copy is of course everything
-// in the 'file' variable.
+// CODE :
+// --- pixel.V(upperLeftX, upperLeftY)
+//  This creates a 2D vector in the pixel library.
+//
+// --- imd.Push() 
+//  This will push the 2D vector point inside the list of vertices that will be used to draw shapes. In this case, we need 
+// to push two of them, the upper left and the bottom right corner.
+// 
+// --- imd.Rectangle(0)
+//  This method draws a rectangle. The 0 indicates that the rectangle will be a filled rectangle. Once this method is
+//  called. Every other push will create another list of vertices that will be used to draw another shape. 
+//
+// --- imd.Draw(w)
+//  The method Draw() will take all the vertices stored into our 'imd' variable and draw them.
 ---------------------------------------------------------------------------------------------------------------------------
-
-REDO EVERYTHING THIS WAY
-
-/// ToDraw(buffer FrameBuffer) \\\
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+/// func (myGame *Game) RunGame() {} \\\
 //
-// Location : 
+// Location : game/game.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** go myGame.gameLoop() ***
+// *** myGame.updateWindow() ***
 //
-// *** (line / block of code in question) ***
-// explanation
+// DESCRIPTION :
+//  Those two methods are needed to run the Chip-8 Emulator. Both of these methods need to run at the same time. The problem
+//  is that when calling a function it needs to end for the next line of code to be executed. Since the gameLoop() doesn't 
+//  actually return anything, the next line can't be executed. This is where 'go' comes in clutch. It allows us to start
+//  a new goroutine for the gameLoop() to run in without blocking the main thread. This way, the gameLoop() will run on 
+//  its own and the next line can be executed normally to allow the emulator work properly.
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+/// func (myApp *Game) gameLoop() {} / func (myGame *Game) updateWindow() {} \\\
+//
+// Location : game/game.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** clock := time.NewTicker(chip8.Frequency)  ***
+//
+// DESCRIPTION :
+//  To execute the game loop / window update at 60Hz we can create a ticker where it will tick every 1/60 seconds.
+//-------------------------------------------------------------------------------------------------------------------------
+// *** <-clock.C ***
+//
+// DESCRIPTION :
+//  This is the code that will block everything that follows it until it receive a tick 
+//  (the duration has been set beforehands)
+//-------------------------------------------------------------------------------------------------------------------------
+// *** myGame.window.Update() (updateWindow()) ***
+//
+// DESCRIPTION :
+//  This is a function by the package pixelgl that needs to be executed every frame. This method is called at the end.
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+/// func (c8 *Chip8) IDXYN() {} \\\
+//
+// Location : chip8/instructions.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** VX := c8.Registers[c8.COpcode.X()] ***
+// *** VY := c8.Registers[c8.COpcode.Y()] ***
+// *** hSprite := int(c8.COpcode.N()) ***
+// *** i := int(c8.I) ***
+// *** c8.Registers[0xF] = 0 ***
+//
+// DESCRIPTION :
+//  This block of code is the necessary setup the sprite and the collision flag
+//
+// CODE :
+//  --- c8.COpcode.X() / c8.COpcode.Y() / ...etc
+//   The instruction that we're currently working is 'DXYN'. To get the VX and VY, we need to get the values X and Y
+//   inside the instruction 'DXYN'. For what we use the functions that we made in chip8/opcode.go
+//
+//  --- VX := c8.Registers[c8.COpcode.X()] / VY := c8.Registers[c8.COpcode.Y()]
+//   The wiki states that the coordinates are VX and VY. These values are part of the Registers.
+//
+//  --- hSprite := int(c8.COpcode.N())
+//   The wiki states that the Height of the pixel is N so we'll go and get the value N from the opcode.
+//
+//  --- i := int(c8.I)
+//   The wiki states that the sprite is located at I so we're getting the value. Reminder, the I was set beforehand.
+//   There's an instruction called 'ANNN' that sets I to NNN. In here, all we're doing is getting the value.
+//
+//  --- c8.Registers[0xF] = 0
+//   This is used to set up the collision flag (VF) to 0 (OFF). The collision flag is used to indicate if the sprite bit
+//   and the FrameBuffer bit are both set to 1 (ON). If yes, then the collision flag will be set to 1 to indicate that. 
+//-------------------------------------------------------------------------------------------------------------------------
+// *** for y := 0; y < hSprite; y++ ***
+// *** for x := 0; x < 8; x++ ***
+//
+// DESCRIPTION :
+//  This is a pair of nested loops. This has the goal to go through every single bit in the sprite so that we can check which
+//  ones need to be drawn. hSprite = height / 8 = width
+//-------------------------------------------------------------------------------------------------------------------------
+// *** _byte := c8.Memory[i+y] ***
+// *** spritePx := _byte & (0x80 >> x) ***
+//
+// DESCRIPTION :
+//  This block of code serves the purpose of getting every single bit of the sprite. It uses the I that we got earlier to 
+//  access the memory location of where the sprite is located. Once we got the byte from the memory, all we need is to get 
+//  every bit from this byte which represent a pixel from the sprite
+// 
+// CODE :
+//  --- _byte := c8.Memory[i+y]
+//   I is the index in memory where the sprite data is located. y represents the row of the current sprite. With this we can
+//   through the whole sprite data and get every byte of it.
+//
+//  --- (0x80 >> x)
+//   0x80 represents 1000 0000. x represents the amount that we want to shift the 1 by.
+//   For example, in the nested loops, x = 3 which means that know our 0x80 is equal to 0001 0000
+//   Since a pixel has a width of 8 pixels and how the loop is made, the x value will go from 0 so 1000 0000
+//   all the way to 7 which is 0000 0001.
+//
+//  --- spritePx := _byte & (0x80 >> x)
+//   Here we'll use the operator '&' to do a bitwise AND operation between the byte that we have extracted from the memory and
+//   the bitmask specified. Above I've explained how the bitmask shifting to the right works so in this case we'll be able to
+//   get every bit of the byte and use it later in the function.
+//-------------------------------------------------------------------------------------------------------------------------
+// *** if spritePx != 0 ***
+//
+// DESCRIPTION :
+//  The reason why we're checking the spritePx to not be 0 is because we don't want to draw any pixels that are set to 0.
+//  Any pixels that are set to 0 (OFF) are going to be transparent or empty.
+//-------------------------------------------------------------------------------------------------------------------------
+// *** screenX := int(VX) + x ***
+// *** screenY := int(VY) + y ***
+// *** cellFrameBuffer := c8.FrameBuffer.Get(screenX, screenY) ***
+//
+// DESCRIPTION :
+//  VX and VY represent the starting position of the sprite howewer we then need to add x / y to get the next coordinates
+//  of the next pixels that need to be drawn (if set to 1 (ON)). We have to convert it to int for the operation and for
+//  our Get() function 
+//
+// CODE :
+// --- cellFrameBuffer := c8.FrameBuffer.Get(screenX, screenY)
+//  To indicate to the window that we'll need to draw a particular pixel, we'll need to modify the value inside the FrameBuffer
+//  What we do is call the function Get() with the coordinates that we calculated earlier, to get the cell of the FrameBuffer
+//  that corresponds to their respective gives coordinates.
+// *** if spritePx != 0 ***
+//
+// DESCRIPTION :
+//  The reason why we're checking the spritePx to not be 0 is because we don't want to draw any pixels that are set to 0.
+//  Any pixels that are set to 0 (OFF) are going to be transparent or empty.
+//-------------------------------------------------------------------------------------------------------------------------
+// *** if *cellFrameBuffer == 1 { ***
+//      c8.Registers[0xF] = 1
+//	   }
+// 
+//  *** *cellFrameBuffer ^= 1 *** 
+//
+// DESCRIPTION :
+//  This is where we'll modify the value inside of the FrameBuffer. The Get() method returns a memory address of the cell
+//  inside the FrameBuffer and not the actual value. This is because we want to modify this value based on the sprite pixel.
+//  So first we check if the value pointed by the pointer is equal to 1. If yes, we set the collision flag (VF) to 1 to show
+//  that. Next we modify the value of the pointer by using the *. This way, we don't modify the value inside the variable, but
+//  the value inside the FrameBuffer
+//
+// CODE :
+// --- if *cellFrameBuffer == 1 {
+//      c8.Registers[0xF] = 1
+//	   }
+//  We check if the value that the memory address points to (using the *) is equal to 1. If yes, set collision flag (VF) to 1 (ON)
+//
+// --- *cellFrameBuffer ^= 1
+//  Here we check the same value and do a XOR operation (exclusive OR). We set the respective cell inside the FrameBuffer
+//  to 1 (needs to be drawn) if spritePx = 1 OR *cellFrameBuffer = 1 EXCLUDING if both are set to 1. In that case we set the
+//  collision flag (VF) to 1 (ON) and that's it
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
