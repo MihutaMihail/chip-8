@@ -10,7 +10,8 @@ func (c8 *Chip8) I00E0() {
 
 // Return from a subroutine
 func (c8 *Chip8) I00EE() {
-	fmt.Println("I00EE")
+	c8.Sp--
+	c8.Pc = c8.Stack[c8.Sp]
 }
 
 // Jumps to address NNN
@@ -21,111 +22,175 @@ func (c8 *Chip8) I1NNN() {
 
 // Calls subroutine at NNN
 func (c8 *Chip8) I2NNN() {
-	fmt.Println("I2NNN")
+	addr := c8.COpcode.NNN()
+	c8.Stack[c8.Sp] = c8.Pc
+	c8.Sp++
+	c8.Pc = addr
 }
 
-// Skips next instruction if VX equals NN
+// Skip next instruction if vX == NN
 func (c8 *Chip8) I3XNN() {
-	fmt.Println("I3XNN")
+	vX := c8.Registers[c8.COpcode.X()]
+	_byte := c8.COpcode.NN()
+
+	if vX == _byte {
+		c8.Pc += 2
+	}
 }
 
-// Skips next instruction if VX does not equal NN
+// Skip next instruction if vX != NN
 func (c8 *Chip8) I4XNN() {
-	fmt.Println("I4XNN")
+	vX := c8.Registers[c8.COpcode.X()]
+	_byte := c8.COpcode.NN()
+
+	if vX != _byte {
+		c8.Pc += 2
+	}
 }
 
-// Skips the next instructions if VX equals VY
+// Skip the next instructions if vX == vY
 func (c8 *Chip8) I5XY0() {
-	fmt.Println("I5XY0")
+	vX := c8.Registers[c8.COpcode.X()]
+	vY := c8.Registers[c8.COpcode.Y()]
+
+	if vX == vY {
+		c8.Pc += 2
+	}
 }
 
-// Sets VX = NN
+// Set vX = NN
 func (c8 *Chip8) I6XNN() {
 	_byte := c8.COpcode.NN()
 	c8.Registers[c8.COpcode.X()] = _byte
 }
 
-// Adds NN to VX
+// Add NN to vX
 func (c8 *Chip8) I7XNN() {
 	_byte := c8.COpcode.NN()
 	c8.Registers[c8.COpcode.X()] += _byte
 }
 
-// Sets VX to the value of VY
+// Set vX = vY
 func (c8 *Chip8) I8XY0() {
-	fmt.Println("I8XY0")
+	c8.Registers[c8.COpcode.X()] = c8.Registers[c8.COpcode.Y()]
 }
 
-// Sets VX to VX or VY (OR)
+// Set vX to vX or vY (OR)
 func (c8 *Chip8) I8XY1() {
-	fmt.Println("")
+	c8.Registers[c8.COpcode.X()] |= c8.Registers[c8.COpcode.Y()]
 }
 
-// Sets VX to VX and VY (AND)
+// Set vX to vX and vY (AND)
 func (c8 *Chip8) I8XY2() {
-	fmt.Println("I8XY2")
+	c8.Registers[c8.COpcode.X()] &= c8.Registers[c8.COpcode.Y()]
 }
 
-// Sets VX to VX xor VY (XOR)
+// Set vX to vX xor vY (XOR)
 func (c8 *Chip8) I8XY3() {
-	fmt.Println("I8XY3")
+	c8.Registers[c8.COpcode.X()] ^= c8.Registers[c8.COpcode.Y()]
 }
 
-// VY substracted from VX. VF set to 0 if carry, if not 1
+// Add vY to Vx. Carry flag ---> vF = 1
 func (c8 *Chip8) I8XY4() {
-	fmt.Println("I8XY4")
+	vX := c8.Registers[c8.COpcode.X()]
+	vY := c8.Registers[c8.COpcode.Y()]
+
+	result := vX + vY
+
+	c8.Registers[c8.COpcode.X()] += uint8(result)
+
+	if result > 255 {
+		c8.Registers[0xF] = 1 // Carry
+	} else {
+		c8.Registers[0xF] = 0 // !Carry
+	}
+
+	c8.Pc += 2
 }
 
-// VY substracted from VY. VF set to 0 if borrow, if not 1
+// vY substracted from vX. Borrow ---> vF = 0
 func (c8 *Chip8) I8XY5() {
-	fmt.Println("I8XY5")
+	vX := c8.Registers[c8.COpcode.X()]
+	vY := c8.Registers[c8.COpcode.Y()]
+
+	if vX > vY {
+		c8.Registers[0xF] = 1 // !Borrow
+	} else {
+		c8.Registers[0xF] = 0 // Borrow
+	}
+
+	c8.Registers[c8.COpcode.X()] -= c8.Registers[c8.COpcode.Y()]
+
+	c8.Pc += 2
 }
 
-// Stores the least signification VX in VF and shifts VX right by 1
+// Stores the least significant bit of VX in VF and then shifts VX to the right by 1
 func (c8 *Chip8) I8XY6() {
-	fmt.Println("I8XY6")
+	vXLowestBit := c8.Registers[c8.COpcode.X()] & 0x1
+
+	c8.Registers[0xF] = vXLowestBit
+	c8.Registers[c8.COpcode.X()] >>= 1
 }
 
-// Sets VX to VY minus VX. VF set to 0 if borrow, if not 1
+// Set vX to vY minus vX. vF set to 0 if borrow, if not 1
 func (c8 *Chip8) I8XY7() {
-	fmt.Println("I8XY7")
+	vX := c8.Registers[c8.COpcode.X()]
+	vY := c8.Registers[c8.COpcode.Y()]
+
+	if vY > vX {
+		c8.Registers[0xF] = 1 // !Borrow
+	} else {
+		c8.Registers[0xF] = 0 // Borrow
+	}
+
+	result := vY - vX
+
+	c8.Registers[c8.COpcode.X()] = uint8(result)
 }
 
-// Stores the most signification VX in VF and shifts VX left by 1
+// Stores the most significant bit of VX in VF and then shifts VX to the left by 1
 func (c8 *Chip8) I8XYE() {
-	fmt.Println("I8XYE")
+	vXHighestBit := c8.Registers[c8.COpcode.X()] & 0xF
+
+	c8.Registers[0xF] = vXHighestBit
+	c8.Registers[c8.COpcode.X()] <<= 1
 }
 
-// Skips next instruction if VX does not equal VY
+// Skip next instruction if vX != vY
 func (c8 *Chip8) I9XY0() {
-	fmt.Println("I9XY0")
+	vX := c8.Registers[c8.COpcode.X()]
+	vY := c8.Registers[c8.COpcode.Y()]
+
+	if vX != vY {
+		c8.Pc += 2
+	}
 }
 
-// Sets I to address NNN
+// Set I to address NNN
 func (c8 *Chip8) IANNN() {
 	c8.I = c8.COpcode.NNN()
 }
 
-// Jumps to address NNN plus V0
+// Jumps to address NNN plus v0
 func (c8 *Chip8) IBNNN() {
 	fmt.Println("IBNNN")
 }
 
-// Sets VX to result of AND on a random number (0 to 255) and NN
+// Set vX to result of AND on a random number (0 to 255) and NN
 func (c_ *Chip8) ICXNN() {
 	fmt.Println("ICXNN")
 }
 
-// Draws Sprite (VX, VY), Width  = 8 px / Height = N px
+// Draws Sprite (vX, vY), Width  = 8 px / Height = N px
 func (c8 *Chip8) IDXYN() {
-	VX := c8.Registers[c8.COpcode.X()]
-	VY := c8.Registers[c8.COpcode.Y()]
+	vX := c8.Registers[c8.COpcode.X()]
+	vY := c8.Registers[c8.COpcode.Y()]
 	hSprite := int(c8.COpcode.N())
 
 	// Memory index (I) = Sprite data location
 	i := int(c8.I)
 
-	// Collision flag (VF) = 0 (no collision).
+	// Collision flag (vF) = 0 (no collision).
 	c8.Registers[0xF] = 0
 
 	for y := 0; y < hSprite; y++ {
@@ -136,12 +201,12 @@ func (c8 *Chip8) IDXYN() {
 
 			// Check Sprite px = 1 (ON)
 			if spritePx != 0 {
-				screenX := int(VX) + x
-				screenY := int(VY) + y
+				screenX := int(vX) + x
+				screenY := int(vY) + y
 
 				cellFrameBuffer := c8.FrameBuffer.Get(screenX, screenY)
 
-				// If pixel(frameBuffer) = ON, collision flag (VF) = 1
+				// If pixel(frameBuffer) = ON, collision flag (vF) = 1
 				if *cellFrameBuffer == 1 {
 					c8.Registers[0xF] = 1
 				}
@@ -156,57 +221,69 @@ func (c8 *Chip8) IDXYN() {
 	c8.MustDraw = true
 }
 
-// Skips next instruction if key stored in VX is pressed
+// Skip next instruction if key stored in vX is pressed
 func (c8 *Chip8) IEX9E() {
 	fmt.Println("IEX9E")
 }
 
-// Skips next instruction if key stored in VX is not pressed
+// Skip next instruction if key stored in vX is not pressed
 func (c8 *Chip8) IEXA1() {
 	fmt.Println("IEXA1")
 }
 
-// Sets VX to value of delay timer
+// Set vX to value of delay timer
 func (c8 *Chip8) IFX07() {
 	fmt.Println("IFX07")
 }
 
-// Kes press is awaited and then stores to VX (all instruction halted until nex key event)
+// Kes press is awaited and then stores to vX (all instruction halted until nex key event)
 func (c8 *Chip8) IFX0A() {
 	fmt.Println("IFX0A")
 }
 
-// Sets the delay timer to VX
+// Set the delay timer to vX
 func (c8 *Chip8) IFX15() {
 	fmt.Println("IFX15")
 }
 
-// Sets the sound timer to VX
+// Set the sound timer to vX
 func (c8 *Chip8) IFX18() {
 	fmt.Println("IFX18")
 }
 
-// Adds VX to I (VF is not affected)
+// Add vX to I (vF is not affected)
 func (c8 *Chip8) IFX1E() {
-	fmt.Println("IFX1E")
+	vX := c8.Registers[c8.COpcode.X()]
+
+	c8.I += uint16(vX)
 }
 
-// Sets I to location of sprite for the character in VX (characters 0-F (hexadecimal) are represented by 4x5 font)
+// Set I to location of sprite for the character in vX
+// (characters 0-F (hexadecimal) are represented by 4x5 font)
 func (c8 *Chip8) IFX29() {
 	fmt.Println("IFX29")
 }
 
-// Stores the binary coded decimal representation of VX (hundreds digit at location in I, tens digit at location I+1, ones digit at location I+2)
+// Stores the binary coded decimal representation of vX
+// (hundreds digit at location in I, tens digit at location I+1, ones digit at location I+2)
 func (c8 *Chip8) IFX33() {
-	fmt.Println("IFX33")
+	vX := c8.Registers[c8.COpcode.X()]
+
+	c8.Memory[c8.I] = vX / 100
+	c8.Memory[c8.I+1] = (vX / 10) % 10
+	c8.Memory[c8.I+2] = vX % 10
 }
 
-// Stores from V0 to VX (including VX) starting at address I. Offset from I is increased by 1 for each value (I left unmodified)
+// Stores from v0 to vX (including vX) starting at address I
 func (c8 *Chip8) IFX55() {
-	fmt.Println("IFX55")
+	for a := 0; a <= int(c8.COpcode.X()); a++ {
+		c8.Memory[c8.I+uint16(a)] = c8.Registers[a]
+	}
 }
 
-// Fills from V0 to VX (including VX) with values fro memory, starting at address I. Offset from I is incread by 1 for each value read, (I left unmodified)
+// Reads from v0 to vX (including vX) with values from memory, starting at address I.
 func (c8 *Chip8) IFX65() {
-	fmt.Println("IFX65")
+	for a := 0; a <= int(c8.COpcode.X()); a++ {
+		c8.Registers[a] = c8.Memory[c8.I+uint16(a)]
+	}
 }

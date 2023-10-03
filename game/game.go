@@ -42,7 +42,7 @@ func NewGame() (*Game, error) {
 
 // Loads the ROM and runs game loop
 func (myGame *Game) RunGame() {
-	if err := myGame.c8.LoadROM("assets/2-ibm-logo.ch8"); err != nil {
+	if err := myGame.c8.LoadROM("assets/3-corax+.ch8"); err != nil {
 		panic(err)
 	}
 
