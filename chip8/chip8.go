@@ -13,12 +13,14 @@ type Chip8 struct {
 	FrameBuffer  window.FrameBuffer
 	Instructions map[uint16]func()
 
-	MustDraw bool
-	Quit     bool
+	KeyPressed chan byte
+	DelayTimer byte
+	MustDraw   bool
+	Quit       bool
 }
 
 // Initializing Chip-8
-func InitChip8() (*Chip8, error) {
+func InitChip8(keyPressed chan byte) (*Chip8, error) {
 	c8 := &Chip8{
 		Memory:       [TotalMemory]byte{},
 		Registers:    [NumberOfRegisters]byte{},
@@ -28,6 +30,7 @@ func InitChip8() (*Chip8, error) {
 		Instructions: map[uint16]func(){},
 	}
 
+	c8.KeyPressed = keyPressed
 	c8.Instructions[0x00E0] = c8.I00E0
 	c8.Instructions[0x00EE] = c8.I00EE
 	c8.Instructions[0x1000] = c8.I1NNN
@@ -74,4 +77,11 @@ func (c8 *Chip8) GetFrameBuffer() window.FrameBuffer {
 // Check if Chip-8 is closed
 func (c8 *Chip8) IsClosed() bool {
 	return c8.Quit
+}
+
+// Delay timer that decreases every cycle
+func (c8 *Chip8) countBackDelayTimer() {
+	if c8.DelayTimer != 0 {
+		c8.DelayTimer--
+	}
 }

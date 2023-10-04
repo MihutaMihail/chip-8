@@ -223,17 +223,37 @@ func (c8 *Chip8) IDXYN() {
 
 // Skip next instruction if key stored in vX is pressed
 func (c8 *Chip8) IEX9E() {
-	fmt.Println("IEX9E")
+	key := c8.Registers[c8.COpcode.X()]
+	select {
+	case keyPressed := <-c8.KeyPressed:
+		if keyPressed == key {
+			c8.Pc += 2
+		}
+		return
+	default:
+		return
+	}
 }
 
 // Skip next instruction if key stored in vX is not pressed
 func (c8 *Chip8) IEXA1() {
-	fmt.Println("IEXA1")
+	key := c8.Registers[c8.COpcode.X()]
+
+	select {
+	case keyPressed := <-c8.KeyPressed:
+		if keyPressed == key {
+			return
+		}
+		c8.Pc += 2
+	default:
+		c8.Pc += 2
+
+	}
 }
 
-// Set vX to value of delay timer
+// Set vX = delay timer
 func (c8 *Chip8) IFX07() {
-	fmt.Println("IFX07")
+	c8.Registers[c8.COpcode.X()] = c8.DelayTimer
 }
 
 // Kes press is awaited and then stores to vX (all instruction halted until nex key event)
@@ -241,9 +261,9 @@ func (c8 *Chip8) IFX0A() {
 	fmt.Println("IFX0A")
 }
 
-// Set the delay timer to vX
+// Set delay timer = vX
 func (c8 *Chip8) IFX15() {
-	fmt.Println("IFX15")
+	c8.DelayTimer = c8.Registers[c8.COpcode.X()]
 }
 
 // Set the sound timer to vX
@@ -269,7 +289,7 @@ func (c8 *Chip8) IFX29() {
 func (c8 *Chip8) IFX33() {
 	vX := c8.Registers[c8.COpcode.X()]
 
-	c8.Memory[c8.I] = vX / 100
+	c8.Memory[c8.I] = (vX / 100) % 10
 	c8.Memory[c8.I+1] = (vX / 10) % 10
 	c8.Memory[c8.I+2] = vX % 10
 }

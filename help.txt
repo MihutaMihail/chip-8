@@ -42,7 +42,7 @@
 // 
 // Location : chip8/opcode.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** nibble := (uint16(oc) & uint16(0xF000)) >> 12  ***
+// *** nibble := (uint16(oc) & uint16(0xF000)) >> 12  
 //
 // DESCRIPTION :
 //  This line of code is used to get then nibble (highest / most important 4 bits) of the opcode (16-bit)
@@ -68,7 +68,7 @@
 //   The '>>' operation will perform a bitwise right shift to shift the nibble by 12 positions. This means that the 
 //   corresponding bits that were extracted will shift to the least important 4-bit. Effectively. This isolates the nibble.
 -------------------------------------------------------------------------------------------------------------------------
-// *** case uint16(0x0) / uint16(0x8) / uint16(0xE) / uint16(0xF) ||| default***
+// *** case uint16(0x0) / uint16(0x8) / uint16(0xE) / uint16(0xF) ||| default
 // 
 // DESCRIPTION : 
 //  These cases are part of a switch based on the extracted nibble. The reason for 4 cases is because in the opcode table
@@ -98,7 +98,7 @@
 //
 // Location : chip8/opcode.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** opcode(uint16(c8.Memory[c8.Pc])<<8 | uint16(c8.Memory[c8.Pc+1])) ***
+// *** opcode(uint16(c8.Memory[c8.Pc])<<8 | uint16(c8.Memory[c8.Pc+1])) 
 //
 // DESCRIPTION :
 //  Fetching an opcode requires to go into the memory and use the program counter to indicate the location of the opcode.
@@ -129,7 +129,7 @@
 //
 // Location : chip8/rom.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** copy(memory[startAddress:], file[:]) ***
+// *** copy(memory[startAddress:], file[:]) 
 //
 // DESCRIPTION :
 //  This is the code that will copy the contents of the file into our memory at a specific part.
@@ -149,9 +149,9 @@
 //
 // Location : window/window.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** w.Clear(colornames.Black) ***
-// *** imd := imdraw.New(nil) *** 
-// *** imd.Color = pixel.RGB(1, 1, 1) *** 
+// *** w.Clear(colornames.Black) 
+// *** imd := imdraw.New(nil)  
+// *** imd.Color = pixel.RGB(1, 1, 1)  
 //
 // DESCRIPTION :
 //  This block of code is used to prepare the environnement to draw the pixels
@@ -166,14 +166,14 @@
 // --- imd.Color = pixel.RGB(1, 1, 1)
 //  Here we set the color that will be used to draw the pixels with (white).
 //-------------------------------------------------------------------------------------------------------------------------
-// *** for y := 0; y < 32; y++ ***
-// *** for x := 0; x < 64; x++ ***
+// *** for y := 0; y < 32; y++ 
+// *** for x := 0; x < 64; x++ 
 //
 // DESCRIPTION :
 //  This block of code is a pair of nested loops over a 2D grid with the dimensions 64x32. 64 indicates the width and 32
 //  indcate the height. The reason we do this is to go through every single value in the FrameBuffer.
 //-------------------------------------------------------------------------------------------------------------------------
-// *** if *buffer.Get(x, 31-y) != 0 ***
+// *** if *buffer.Get(x, 31-y) != 0 
 //
 // DESCRIPTION :
 //  Here we check if the value from the function Get() with the coordinates (x, 31-y) is not 0. If it's 1, there's no need
@@ -186,20 +186,20 @@
 //  The function Get() returns the memory address of the value with the coordinates (x, y). We cannot compare this value to
 //  an int like 0 so we need to use the * to get the value that the memory address points to.
 //-------------------------------------------------------------------------------------------------------------------------
-// *** upperLeftX := SizePixel * float64(x) ***
-// *** upperLeftY := SizePixel * float64(y) *** 
-// *** bottomRightX := upperLeftX + SizePixel *** 
-// *** bottomRightY := upperLeftY + SizePixel *** 
+// *** upperLeftX := SizePixel * float64(x) 
+// *** upperLeftY := SizePixel * float64(y)  
+// *** bottomRightX := upperLeftX + SizePixel  
+// *** bottomRightY := upperLeftY + SizePixel  
 //
 // DESCRIPTION :
 //  To be able to draw the pixels inside the window, we first need to specify the upper left coordinates (x, y) and the bottom
 //  right coordinates (x, y). What we do is just multiply the X / Y value by the size of the pixel that we specified to get
 //  the coordinates X and Y for that specific pixel
 //-------------------------------------------------------------------------------------------------------------------------
-// *** imd.Push(pixel.V(upperLeftX, upperLeftY)) ***
-// *** imd.Push(pixel.V(bottomRightX, bottomRightY)) *** 
-// *** imd.Rectangle(0) *** 
-// *** imd.Draw(w) ***
+// *** imd.Push(pixel.V(upperLeftX, upperLeftY)) 
+// *** imd.Push(pixel.V(bottomRightX, bottomRightY)) 
+// *** imd.Rectangle(0) 
+// *** imd.Draw(w) 
 //
 // DESCRIPTION :
 //  Know that we have specified the upper left and bottom right coordinates we can use those values to create the vectors
@@ -226,8 +226,8 @@
 //
 // Location : game/game.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** go myGame.gameLoop() ***
-// *** myGame.updateWindow() ***
+// *** go myGame.gameLoop()
+// *** myGame.updateWindow() 
 //
 // DESCRIPTION :
 //  Those two methods are needed to run the Chip-8 Emulator. Both of these methods need to run at the same time. The problem
@@ -247,7 +247,7 @@
 // DESCRIPTION :
 //  To execute the game loop / window update at 60Hz we can create a ticker where it will tick every 1/60 seconds.
 //-------------------------------------------------------------------------------------------------------------------------
-// *** <-clock.C ***
+// *** <-clock.C
 //
 // DESCRIPTION :
 //  This is the code that will block everything that follows it until it receive a tick 
@@ -264,11 +264,11 @@
 //
 // Location : chip8/instructions.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** vX := c8.Registers[c8.COpcode.X()] ***
-// *** vY := c8.Registers[c8.COpcode.Y()] ***
-// *** hSprite := int(c8.COpcode.N()) ***
-// *** i := int(c8.I) ***
-// *** c8.Registers[0xF] = 0 ***
+// *** vX := c8.Registers[c8.COpcode.X()]
+// *** vY := c8.Registers[c8.COpcode.Y()]
+// *** hSprite := int(c8.COpcode.N()) 
+// *** i := int(c8.I) 
+// *** c8.Registers[0xF] = 0
 //
 // DESCRIPTION :
 //  This block of code is the necessary setup the sprite and the collision flag
@@ -292,15 +292,15 @@
 //   This is used to set up the collision flag (VF) to 0 (OFF). The collision flag is used to indicate if the sprite bit
 //   and the FrameBuffer bit are both set to 1 (ON). If yes, then the collision flag will be set to 1 to indicate that. 
 //-------------------------------------------------------------------------------------------------------------------------
-// *** for y := 0; y < hSprite; y++ ***
-// *** for x := 0; x < 8; x++ ***
+// *** for y := 0; y < hSprite; y++ 
+// *** for x := 0; x < 8; x++ 
 //
 // DESCRIPTION :
 //  This is a pair of nested loops. This has the goal to go through every single bit in the sprite so that we can check which
 //  ones need to be drawn. hSprite = height / 8 = width
 //-------------------------------------------------------------------------------------------------------------------------
-// *** _byte := c8.Memory[i+y] ***
-// *** spritePx := _byte & (0x80 >> x) ***
+// *** _byte := c8.Memory[i+y]
+// *** spritePx := _byte & (0x80 >> x)
 //
 // DESCRIPTION :
 //  This block of code serves the purpose of getting every single bit of the sprite. It uses the I that we got earlier to 
@@ -323,14 +323,14 @@
 //   the bitmask specified. Above I've explained how the bitmask shifting to the right works so in this case we'll be able to
 //   get every bit of the byte and use it later in the function.
 //-------------------------------------------------------------------------------------------------------------------------
-// *** if spritePx != 0 ***
+// *** if spritePx != 0
 //
 // DESCRIPTION :
 //  The reason why we're checking the spritePx to not be 0 is because we don't want to draw any pixels that are set to 0.
 //  Any pixels that are set to 0 (OFF) are going to be transparent or empty.
 //-------------------------------------------------------------------------------------------------------------------------
-// *** screenX := int(vX) + x ***
-// *** screenY := int(vY) + y ***
+// *** screenX := int(vX) + x 
+// *** screenY := int(vY) + y 
 // *** cellFrameBuffer := c8.FrameBuffer.Get(screenX, screenY) ***
 //
 // DESCRIPTION :
@@ -349,11 +349,11 @@
 //  The reason why we're checking the spritePx to not be 0 is because we don't want to draw any pixels that are set to 0.
 //  Any pixels that are set to 0 (OFF) are going to be transparent or empty.
 //-------------------------------------------------------------------------------------------------------------------------
-// *** if *cellFrameBuffer == 1 { ***
+// *** if *cellFrameBuffer == 1 { 
 //      c8.Registers[0xF] = 1
 //	   }
 // 
-//  *** *cellFrameBuffer ^= 1 *** 
+//  *** *cellFrameBuffer ^= 1 
 //
 // DESCRIPTION :
 //  This is where we'll modify the value inside of the FrameBuffer. The Get() method returns a memory address of the cell
@@ -379,10 +379,10 @@
 //
 // Location : chip8/instructions.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** addr := c8.COpcode.NNN() ***
-// *** c8.Stack[c8.Sp] = c8.Pc ***
-// *** c8.Sp++ ****
-// *** c8.Pc = addr ***
+// *** addr := c8.COpcode.NNN()
+// *** c8.Stack[c8.Sp] = c8.Pc
+// *** c8.Sp++
+// *** c8.Pc = addr
 //
 // DESCRIPTION :
 //  This block of code to call a subroutine. The way I see it is as if you're executing a program in your main() but you need
@@ -411,8 +411,8 @@
 //
 // Location : chip8/instructions.go
 //-------------------------------------------------------------------------------------------------------------------------
-// *** c8.Sp-- ***
-// *** c8.Pc = c8.Stack[c8.Sp] ***
+// *** c8.Sp--
+// *** c8.Pc = c8.Stack[c8.Sp]
 //
 // DESCRIPTION :
 //  This block of code is used to return from the subroutine. To do that, we'll need to access the Stack using the stack pointer.
@@ -429,3 +429,74 @@
 ---------------------------------------------------------------------------------------------------------------------------
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ---------------------------------------------------------------------------------------------------------------------------
+/// func KeyHandler(w *pixelgl.Window, keypad Keypad) \\\
+//
+// Location : keypad/keypad.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** for key, cmd := range keypad {
+// ***  if w.JustPressed(key) {
+// ***      cmd()
+// *** 	}
+// *** }
+//
+// DESCRIPTION :
+//  This function gets a 'keypad' that will use here in the for. The purpose of this is to go through 
+//  the keypad (which is a map) and check if a particular key has been pressed in the window. 
+//  If yes, then we execute the command that is associated to the key
+//
+// For reference, this is how the Chip-8 keypad looks like
+//
+//  Chip-8       Keyboard
+//  1 2 3 C      1 2 3 4
+//  4 5 6 D  =>  Q W E R
+//  7 8 9 E      A S D F
+//  A 0 B F      Z X C V
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+/// var KeyboardToKeypad = map[pixelgl.Button]byte \\\
+//
+// Location : keypad/keypad.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** var KeyboardToKeypad = map[pixelgl.Button]byte {
+//	*** pixelgl.Key1: 1,
+//	*** pixelgl.Key2: 2,
+//  *** pixelgl.KeyF: 0xE,
+//  ***	pixelgl.KeyZ: 0xA,
+//  *** ...
+// *** }
+//
+// DESCRIPTION :
+//  This is where we set the keys that you can see below.
+//  The Chip-8 keypad :
+//
+//  Chip-8       Keyboard
+//  1 2 3 C      1 2 3 4
+//  4 5 6 D  =>  Q W E R
+//  7 8 9 E      A S D F
+//  A 0 B F      Z X C V
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+/// for key, value := range keypad.KeyboardToKeypay {} \\\
+//
+// Location : game/game.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** cmdKeypad := make(keypad.Keypad)
+// *** for key, value := range keypad.KeyboardToKeypad {
+// ***  newKey := value
+// ***  cmdKeypad[key] = func() {
+// ***      myGame.Channel <- newKey
+// ***  }
+// *** }
+// 
+// DESCRIPTION :
+//  This is where we use the 'KeyboardToKeypad' variable where we set all the necessary keys. We go through every single value
+//  and put it into another map 'cmdKeypad' that is based on 'type Keypad map[pixelgl.Button]func()' (keypad/keypad.go).
+//  The key here will be the key on the keyboard and the value will be a function that will take this key and send it
+//  to our channel. This channel (chan byte) will be later used in some instructions.
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
+
+

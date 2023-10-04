@@ -29,6 +29,7 @@ func (oc opcode) GetOpcodeInstruction() uint16 {
 func (c8 *Chip8) CycleEmulator() {
 	c8.fetchOpcode()
 	c8.executeOpcode()
+	c8.countBackDelayTimer()
 }
 
 // Fetch opcode from memory
