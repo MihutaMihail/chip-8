@@ -256,9 +256,17 @@ func (c8 *Chip8) IFX07() {
 	c8.Registers[c8.COpcode.X()] = c8.DelayTimer
 }
 
-// Kes press is awaited and then stores to vX (all instruction halted until nex key event)
+// Kes press is awaited and then stores to vX (all instruction halted until next key event)
 func (c8 *Chip8) IFX0A() {
-	fmt.Println("IFX0A")
+	for {
+		select {
+		case key := <-c8.KeyPressed:
+			if key <= NumberOfKeys {
+				c8.Registers[c8.COpcode.X()] = key
+				return
+			}
+		}
+	}
 }
 
 // Set delay timer = vX

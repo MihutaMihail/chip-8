@@ -498,5 +498,26 @@
 ---------------------------------------------------------------------------------------------------------------------------
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 ---------------------------------------------------------------------------------------------------------------------------
-
-
+/// func (c8 *Chip8) IEXA1() \\\
+//
+// Location : game/game.go
+//-------------------------------------------------------------------------------------------------------------------------
+// *** select {
+// ***  case keyPressed := <-c8.KeyPressed:
+// ***   if keyPressed == key {
+// ***	   return
+// ***   }
+// ***   c8.Pc += 2
+// *** default:
+// ***	 c8.Pc += 2
+// *** }
+// 
+// DESCRIPTION :
+//  The purpose of the opcode is to skip the instruction if the key pressed is not the same as the one stored in vX.
+//  We use a select (not a switch) because we want to wait to see which one of the cases will occur first. It tries to get
+//  a value from 'keyPressed'. If there's no value, the the program will proceed to the default case. If the same key that
+//  is stored in vX is pressed, then it will return to exit the function. This opcode skips the next instruction (c8. Pc += 2),
+//  only if the same key as the one in vX is not pressed.
+---------------------------------------------------------------------------------------------------------------------------
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+---------------------------------------------------------------------------------------------------------------------------
