@@ -6,7 +6,7 @@ You can load a ROM in game/game.go ---> RunGame()
 
 ## Code
 Not all code has been done by me. I have taken code / inspiration from another project that I have found however I didn't just copy and 
-pasted. I made sure to write every line and understand what I'm typing (at least as how much I can). To show that, I have written a file
+pasted. I made sure to write every line and understand what I'm typing (at least as much I can). To show that, I have written a file
 called 'help.txt' where I've explained a few functions that I have took / didn't really understand at first and I thought that it needed
 a little description.
 
