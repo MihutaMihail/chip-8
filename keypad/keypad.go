@@ -27,6 +27,7 @@ var KeyboardToKeypad = map[pixelgl.Button]byte{
 	pixelgl.KeyV: 0xF,
 }
 
+// Handles key inputs in the window
 func KeyHandler(w *pixelgl.Window, keypad Keypad) {
 	ticker := time.NewTicker(time.Second / 250)
 	defer ticker.Stop()
