@@ -56,7 +56,7 @@ func NewGame() (*Game, error) {
 
 // Loads the ROM and runs game loop
 func (myGame *Game) RunGame() {
-	if err := myGame.C8.LoadROM("assets/5-quirks.ch8"); err != nil {
+	if err := myGame.C8.LoadROM("assets/4-flags.ch8"); err != nil {
 		panic(err)
 	}
 

@@ -99,15 +99,13 @@ func (c8 *Chip8) I8XY4() {
 
 	result := vX + vY
 
-	c8.Registers[c8.COpcode.X()] += uint8(result)
+	c8.Registers[c8.COpcode.X()] = uint8(result)
 
 	if result > 255 {
 		c8.Registers[0xF] = 1 // Carry
 	} else {
 		c8.Registers[0xF] = 0 // !Carry
 	}
-
-	c8.Pc += 2
 }
 
 // vY substracted from vX. Borrow ---> vF = 0
@@ -121,9 +119,7 @@ func (c8 *Chip8) I8XY5() {
 		c8.Registers[0xF] = 0 // Borrow
 	}
 
-	c8.Registers[c8.COpcode.X()] -= c8.Registers[c8.COpcode.Y()]
-
-	c8.Pc += 2
+	c8.Registers[c8.COpcode.X()] = (vX - vY) & 0xFF
 }
 
 // Stores the least significant bit of VX in VF and then shifts VX to the right by 1
@@ -152,7 +148,7 @@ func (c8 *Chip8) I8XY7() {
 
 // Stores the most significant bit of VX in VF and then shifts VX to the left by 1
 func (c8 *Chip8) I8XYE() {
-	vXHighestBit := c8.Registers[c8.COpcode.X()] & 0xF
+	vXHighestBit := c8.Registers[c8.COpcode.X()] & 0x80
 
 	c8.Registers[0xF] = vXHighestBit
 	c8.Registers[c8.COpcode.X()] <<= 1
