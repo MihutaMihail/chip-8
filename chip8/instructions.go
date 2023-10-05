@@ -1,6 +1,8 @@
 package chip8
 
-import "fmt"
+import (
+	"math/rand"
+)
 
 // Clears the window
 func (c8 *Chip8) I00E0() {
@@ -171,14 +173,14 @@ func (c8 *Chip8) IANNN() {
 	c8.I = c8.COpcode.NNN()
 }
 
-// Jumps to address NNN plus v0
+// Jumps to address NNN plus
 func (c8 *Chip8) IBNNN() {
-	fmt.Println("IBNNN")
+	c8.Pc = c8.COpcode.NNN() + uint16(c8.Registers[0])
 }
 
-// Set vX to result of AND on a random number (0 to 255) and NN
-func (c_ *Chip8) ICXNN() {
-	fmt.Println("ICXNN")
+// Set vX = random number (0 to 255) + NN
+func (c8 *Chip8) ICXNN() {
+	c8.Registers[c8.COpcode.X()] = uint8(rand.Intn(256)) & c8.COpcode.NN()
 }
 
 // Draws Sprite (vX, vY), Width  = 8 px / Height = N px
@@ -276,7 +278,7 @@ func (c8 *Chip8) IFX15() {
 
 // Set the sound timer to vX
 func (c8 *Chip8) IFX18() {
-	fmt.Println("IFX18")
+	c8.SoundTimer = c8.Registers[c8.COpcode.X()]
 }
 
 // Add vX to I (vF is not affected)
@@ -286,10 +288,11 @@ func (c8 *Chip8) IFX1E() {
 	c8.I += uint16(vX)
 }
 
-// Set I to location of sprite for the character in vX
-// (characters 0-F (hexadecimal) are represented by 4x5 font)
+// Set I = location of sprite for character vX
+// FontSize is 5 bytes
 func (c8 *Chip8) IFX29() {
-	fmt.Println("IFX29")
+	vX := c8.Registers[c8.COpcode.X()]
+	c8.I = FontStartAddress + uint16(FontSize*vX)
 }
 
 // Stores the binary coded decimal representation of vX

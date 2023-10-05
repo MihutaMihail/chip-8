@@ -15,6 +15,7 @@ type Chip8 struct {
 
 	KeyPressed chan byte
 	DelayTimer byte
+	SoundTimer byte
 	MustDraw   bool
 	Quit       bool
 }
