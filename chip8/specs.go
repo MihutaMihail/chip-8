@@ -11,7 +11,7 @@ const (
 	FontStartAddress  = 0x000
 	FontSize          = 5
 	StackLevels       = 16
-	Frequency         = time.Second / time.Duration(500)
+	Frequency         = time.Second / time.Duration(60)
 	WidthScreen       = 64
 	HeightScreen      = 32
 )
